@@ -4,16 +4,20 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
+// Routes
 import userRoutes from "./modules/user/user.routes.js";
 import preferenceRoutes from "./modules/preferences/preference.routes.js";
+import destinationRoutes from "./modules/destination/destination.routes.js";
 
+// Error middleware
 import errorMiddleware from "./middleware/error.middleware.js";
 
 const app = express();
 
-// -------------------------
-// Security
-// -------------------------
+// ======================================================
+// SECURITY
+// ======================================================
+
 app.use(helmet());
 
 app.use(
@@ -23,20 +27,28 @@ app.use(
   })
 );
 
-// -------------------------
-// Body Parsing
-// -------------------------
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ======================================================
+// BODY PARSING
+// ======================================================
 
-// -------------------------
-// Cookies
-// -------------------------
+app.use(express.json());
+
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
+// ======================================================
+// COOKIE PARSER
+// ======================================================
+
 app.use(cookieParser());
 
-// -------------------------
-// Rate Limiting
-// -------------------------
+// ======================================================
+// RATE LIMITING
+// ======================================================
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -46,9 +58,10 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-// -------------------------
-// Health Check
-// -------------------------
+// ======================================================
+// HEALTH CHECK
+// ======================================================
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -56,9 +69,9 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// -------------------------
-// Routes
-// -------------------------
+// ======================================================
+// API ROUTES
+// ======================================================
 
 // Authentication + User Profile
 app.use("/api/auth", userRoutes);
@@ -66,10 +79,14 @@ app.use("/api/auth", userRoutes);
 // Travel Preferences
 app.use("/api/preferences", preferenceRoutes);
 
-// -------------------------
-// Error Middleware
+// Destinations
+app.use("/api/destinations", destinationRoutes);
+
+// ======================================================
+// ERROR HANDLING
 // MUST BE LAST
-// -------------------------
+// ======================================================
+
 app.use(errorMiddleware);
 
 export default app;
